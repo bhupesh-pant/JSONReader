@@ -68,20 +68,30 @@ public class FactAdapter extends ArrayAdapter<Fact> {
 		//Display Facts Images in ImageView widget
 		ImageView image = (ImageView) view.findViewById(R.id.imageView);
 
-		Bitmap bitmap = imageCache.get(fact.getProductId());
+		Bitmap bitmap = imageCache.get(position);
 
 		//Bitmap bitmap; 
 		if (bitmap  != null) {			
 			image.setImageBitmap(fact.getBitmap());
+			Log.i("FactAdapter : Image found in cache : Tile & Position number ", " - "+  fact.getTitle()+ " - " + position);
 		}
-		else if(fact.getImageurlstatus()==false||fact.getImageHref()=="null"){
+		else if(fact.getImageurlstatus()==false){
 			bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.no_image_available);
 			image.setImageBitmap(bitmap);
+			Log.i("FactAdapter : Bad URL : Title &  Position number ", " - "+  fact.getTitle()+ " - " + position);
 		}
+		
+		else if(fact.getImageHref()=="null"){
+			bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.no_image_available);
+			image.setImageBitmap(bitmap);
+			Log.i("FactAdapter : NULL URL : Title &  Position number ", " - "+ fact.getTitle()+ " - " + position);
+		}
+		
 		else {
 			FactAndView container = new FactAndView();
 			container.fact = fact;
 			container.view = view;
+			container.position= position;
 			ImageLoader loader = new ImageLoader();
 			loader.execute(container);
 		}
@@ -92,6 +102,7 @@ public class FactAdapter extends ArrayAdapter<Fact> {
 		public Fact fact;
 		public View view;
 		public Bitmap bitmap;
+		public int position;
 	}
 
 	private class ImageLoader extends AsyncTask<FactAndView, Void, FactAndView> {
@@ -146,7 +157,9 @@ public class FactAdapter extends ArrayAdapter<Fact> {
 			ImageView image = (ImageView) result.view.findViewById(R.id.imageView);
 			image.setImageBitmap(result.bitmap);
 			//result.fact.setBitmap(result.bitmap);
-			imageCache.put(result.fact.getProductId(), result.bitmap);
+			if(result.fact.getImageurlstatus()){
+			imageCache.put(result.position, result.bitmap);
+			}
 		}
 	}
 }
